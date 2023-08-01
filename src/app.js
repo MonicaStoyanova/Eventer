@@ -1,31 +1,42 @@
-import { decorateContext } from "./middlewares/decorateContext.js";
+import { page, render } from "./lib.js";
+import { getUserData } from "./util.js";
+import { showCatalog } from "./views/catalog.js";
+import { showCreate } from "./views/create.js";
+import { showDetails } from "./views/details.js";
+import { showEdit } from "./views/edit.js";
+import { showHome } from "./views/home.js";
+import { showLogin } from "./views/login.js";
+import { updateNav } from "./views/nav.js";
+import { showRegister } from "./views/register.js";
 
-import { page, render } from "./utils/lib.js";
-import { homeView } from "./views/homeView.js";
-import { navView } from "./views/navView.js";
-import { loginView } from "./views/loginView.js";
-import { registerView } from "./views/registerView.js";
-import { eventsView } from "./views/eventsView.js";
-import { createView } from "./views/createView.js";
-import { detailsView } from "./views/detailsView.js";
-import { editView } from "./views/editView.js";
+//get main element for render
+const main = document.querySelector("main");
 
-const main = document.getElementById("main-content");
-export const renderMain = (content) => render(content, main);
-
-console.log("App is running... ");
-
+//attach middleware
 page(decorateContext);
+page("/", showHome);
+page("/catalog", showCatalog);
+page("/catalog/:id", showDetails);
+page("/edit/:id", showEdit);
+page("/create", showCreate);
+page("/login", showLogin);
+page("/register", showRegister);
 
-navView();
-const show = () => console.log("show");
-
-page("/", homeView);
-page("/login", loginView);
-page("/register", registerView);
-page("/events", eventsView);
-page("/details/:id", detailsView);
-page("/edit/:id", editView);
-page("/addevent", createView);
-
+//create page routing
+updateNav();
 page.start();
+
+function decorateContext(ctx, next) {
+  ctx.render = renderMain;
+  ctx.updateNav = updateNav;
+
+  const user = getUserData();
+  if (user) {
+    ctx.user = user;
+  }
+  next();
+}
+
+function renderMain(content) {
+  render(content, main);
+}
